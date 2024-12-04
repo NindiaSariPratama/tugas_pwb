@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mini Ecommerce</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script defer src="https://use.fontawesome.com/releases/v5.8.1/js/all.js"
+    integrity="sha384-g5uSoOSBd7KkhAMlnQILrecXvzst9TdC09/VM+pjDTCM+1il8RHz5fKANTFFb+gQ" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #fbe7c6, #d5c6e0);
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            color: #444;
+        }
+        .navbar {
+            background: #ffe5d9;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #4a4e69;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+        .card:hover {
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: contain;
+            border-radius: 10px 10px 0 0;
+        }
+        .addCart {
+            background: #c5a3ff;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .addCart:hover {
+            transform: scale(1.1);
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        #keyword:focus {
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+        #cartDropdown {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: #fff0f0;
+            border: 1px solid #ffd1d1;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+        #cartDropdown.active {
+            display: block;
+        }
+        .btn-primary {
+            background: #ffcad4;
+            border: none;
+            color: #4a4e69;
+        }
+        .btn-primary:hover {
+            background: #f3c4fb;
+        }
+        .btn-success {
+            background: #8ecae6;
+            border: none;
+        }
+        .btn-success:hover {
+            background: #219ebc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a class="navbar-brand">Mini Ecommerce</a>
+            <form class="form-inline" id="formItem">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" id="keyword" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="searchItem">Search</button>
+            </form>
+            <button class="btn btn-primary" id="cart"><i class="fas fa-shopping-cart"></i> (0)</button>
+        </nav>
+        <div id="cartDropdown" class="p-3">
+            <h5>Keranjang Belanja</h5>
+            <ul id="cartList" class="list-group list-group-flush"></ul>
+            <button class="btn btn-success mt-2">Checkout</button>
+        </div>
+        <div class="row" id="listBarang"></div>
+    </div>
+    <script>
+        const items = [
+            ['001', 'Keyboard Logitech', 60000, 'Keyboard yang mantap untuk kantoran', 'logitech purple.webp'], 
+            ['002', 'Keyboard MSI', 300000, 'Keyboard gaming MSI mekanik', 'Keyboard MSI.png'],
+            ['003', 'Mouse Genius', 50000, 'Mouse Genius biar lebih pinter', 'Mouse Genius.png'],
+            ['004', 'Jertech Mouse', 30000, 'Mouse yang disukai kucing', 'jertech mouse.png']
+        ];
+        const listBarang = document.getElementById('listBarang');
+        const cartButton = document.getElementById('cart');
+        const cartDropdown = document.getElementById('cartDropdown');
+        const cartList = document.getElementById('cartList');
+        let cartCount = 0;
+        let cartItems = [];
+
+        function renderItems(items) {
+            listBarang.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-4 mt-2';
+                card.innerHTML = `
+                    <div class="card">
+                        <img src="${item[4]}" class="card-img-top" alt="${item[1]}">
+                        <div class="card-body">
+                            <h5 class="card-title">${item[1]}</h5>
+                            <p class="card-text">${item[3]}</p>
+                            <p class="card-text">Rp ${item[2].toLocaleString()}</p>
+                            <a href="#" class="btn addCart" data-id="${item[0]}">Tambahkan ke keranjang</a>
+                        </div>
+                    </div>
+                `;
+                listBarang.appendChild(card);
+            });
+        }
+
+        function renderCartItems() {
+            cartList.innerHTML = '';
+            if (cartItems.length === 0) {
+                cartList.innerHTML = '<li class="list-group-item">Keranjang kosong</li>';
+            } else {
+                cartItems.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.innerText = `${item.name} - Rp ${item.price.toLocaleString()}`;
+                    cartList.appendChild(li);
+                });
+            }
+        }
+
+        cartButton.addEventListener('click', () => {
+            cartDropdown.classList.toggle('active');
+            renderCartItems();
+        });
+
+        listBarang.addEventListener('click', function(event) {
+            if (event.target.classList.contains('addCart')) {
+                event.preventDefault();
+                const itemID = event.target.dataset.id;
+                const item = items.find(i => i[0] === itemID);
+                if (item) {
+                    cartItems.push({ id: item[0], name: item[1], price: item[2] });
+                    cartCount++;
+                    cartButton.innerHTML = `<i class="fas fa-shopping-cart"></i> (${cartCount})`;
+                    alert('Barang berhasil ditambahkan ke keranjang!');
+                }
+            }
+        });
+
+        document.getElementById('formItem').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const searchQuery = document.getElementById('keyword').value.toLowerCase();
+            const filteredItems = items.filter(item =>
+                item[1].toLowerCase().includes(searchQuery) || 
+                item[3].toLowerCase().includes(searchQuery)
+            );
+            renderItems(filteredItems);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderItems(items);
+        });
+    </script>
+</body>
+</html>
